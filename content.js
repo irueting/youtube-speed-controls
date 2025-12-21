@@ -147,29 +147,70 @@ class Instance {
     let existing = this._controlsContainer.querySelector('.pbspeed-container')
     if (existing) existing.remove()
   }
-  _create() {
-    let container = document.createElement('div')
-    container.className = 'pbspeed-container'
-    container.style = 'margin:0 14px; display:flex; align-items: center; gap:12px;'
+_create() {
+  let container = document.createElement('div');
+  container.className = 'pbspeed-container';
+  container.style = 'margin:0 14px; display:flex; align-items:center; gap:12px; position:relative;';
 
-    let displayHTML = `<div class="rdisplay" style="grid-row: 1; grid-column: 1; font-size:22px; user-select: none;">⏱ <span class="pbspeed-value"></span></div>`
-    let sliderHTML = `<input id="slider" class="pbspeed-slider" type="range" min="0" max="2" step="0.05" style="grid-row: 1; grid-column: 3; width:7em; height:0.72em; -webkit-appearance:none; outline:none; opacity:0.70; background:#111111; box-shadow: inset 0 0 5px rgba(0, 0, 0, 1); border-radius: 4px;"/>`
-    // Control layout:
-    // | Display | 0.25 0.50 0.75 1.00
-    // | Current | 1.25 1.50 1.75 2.00
-    let presetsHTML = `<div class="setrs" style="grid-row: 1; grid-column: 3; display: none; grid-template: 1fr 1fr / repeat(4, auto); column-gap: 6px;"><div>0.25</div><div>0.50</div><div>0.75</div><div>1.00</div><div>1.25</div><div>1.50</div><div>1.75</div><div>2.00</div></div>`
-    container.innerHTML = `${displayHTML}${sliderHTML}${presetsHTML}`
+  const svgURL = browser.runtime.getURL("playbackSpeed.svg");
+  let displayHTML = `
+    <div class="rdisplay" style="grid-row:1; grid-column:1; font-size:18px; user-select:none; cursor:pointer; display:flex; align-items:center;">
+      <img src="${svgURL}" class="pbspeed-icon" style="width:28px; height:28px;"/>
+      <span class="pbspeed-value" style="color:white; margin-left:6px; margin-right: 0px"></span>
+    </div>
+  `;
 
-    this._container = container
-    this._display = container.querySelector('.rdisplay')
-    this._rateDisplay = this._display.querySelector('.pbspeed-value')
-    this._slider = container.querySelector('.pbspeed-slider')
-    this._presets = container.querySelector('.setrs')
-    
-    // Styling children en-mass
-    // container height 48px => element height 48 / 2 = 24 px
-    for (let x of this._presets.childNodes) x.style = 'font-size: 14px; line-height: 24px; display: flex; align-items: center; cursor: pointer;'
-  }
+  let sliderHTML = `
+    <input id="slider" class="pbspeed-slider" type="range" min="0.2" max="3" step="0.05"
+      style="
+        position:relative;
+        left:0px;
+        bottom:0;
+        width:7em;
+        height:0.35em;
+        opacity:0;
+        visibility:hidden;
+        transition:opacity 0.25s ease, visibility 0.25s ease;
+        -webkit-appearance:none;
+        outline:none;
+        background:#999999;
+        border-radius:0px;
+		cursor: pointer;
+		margin-left: -0px;
+      "
+    />
+  `;
+
+  let presetsHTML = `
+    <div class="setrs" style="grid-row:1; grid-column:3; display:none; grid-template:1fr 1fr / repeat(4, auto); column-gap:6px;">
+      <div>0.25</div><div>0.50</div><div>0.75</div><div>1.00</div>
+      <div>1.25</div><div>1.50</div><div>1.75</div><div>2.00</div>
+    </div>
+  `;
+
+  container.innerHTML = `${displayHTML}${sliderHTML}${presetsHTML}`;
+
+  this._container = container;
+  this._display = container.querySelector('.rdisplay');
+  this._rateDisplay = this._display.querySelector('.pbspeed-value');
+  this._slider = container.querySelector('.pbspeed-slider');
+  this._presets = container.querySelector('.setrs');
+
+  this._display.addEventListener('mouseenter', () => {
+    this._slider.style.visibility = 'visible';
+    this._slider.style.opacity = '1';
+	this._slider.style.display = 'block';
+  });
+  this._container.addEventListener('mouseleave', () => {
+    this._slider.style.opacity = '0';
+    this._slider.style.visibility = 'hidden';
+	this._slider.style.display = 'none';
+  });
+
+  for (let x of this._presets.childNodes)
+    x.style = 'font-size:14px; line-height:24px; display:flex; align-items:center; cursor:pointer;';
+}
+
   _bind() {
     this._video.addEventListener('ratechange', this._updateRateDisplay.bind(this))
 
@@ -184,10 +225,23 @@ class Instance {
     // browser.storage.onChanged.addEventListener(e => console.log(e))
     // browser.storage.local.addEventListener('changed', e => console.log(e))
     // browser.storage.local.onChanged.addEventListener(e => console.log(e))
+	this._container.addEventListener(
+      "wheel",
+      this._onContainerWheel.bind(this),
+      { passive: false }
+    )
+  }
+  _onContainerWheel(e) {
+    e.preventDefault();
+    const step = 0.05;
+    const direction = e.deltaY > 0 ? -1 : 1;
+    let next = this._video.playbackRate + direction * step;
+    next = Math.min(2, Math.max(0, Math.round(next / step) * step));
+    this._video.playbackRate = next;
   }
   _updateRateDisplay() {
     let value = this._video.playbackRate
-    this._rateDisplay.innerText = `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}x`
+    this._rateDisplay.innerText = `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.replace(",", ".")
     this._slider.value = value
   }
   _onPresetClick(e) {
