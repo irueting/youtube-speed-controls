@@ -236,7 +236,7 @@ _create() {
     const step = 0.05;
     const direction = e.deltaY > 0 ? -1 : 1;
     let next = this._video.playbackRate + direction * step;
-    next = Math.min(2, Math.max(0, Math.round(next / step) * step));
+    next = Math.min(3, Math.max(0, Math.round(next / step) * step));
     this._video.playbackRate = next;
   }
   _updateRateDisplay() {
