@@ -150,7 +150,7 @@ class Instance {
 _create() {
   let container = document.createElement('div');
   container.className = 'pbspeed-container';
-  container.style = 'margin:0 14px; display:flex; align-items:center; gap:12px; position:relative;';
+  container.style = 'margin:0 9px; display:flex; align-items:center; gap:12px; position:relative;';
 
   const svgURL = browser.runtime.getURL("playbackSpeed.svg");
   let displayHTML = `
@@ -163,18 +163,20 @@ _create() {
   let sliderHTML = `
     <input id="slider" class="pbspeed-slider" type="range" min="0.2" max="3" step="0.05"
       style="
-        position:relative;
-        left:0px;
-        bottom:0;
-        width:7em;
-        height:0.35em;
-        opacity:0;
-        visibility:hidden;
-        transition:opacity 0.25s ease, visibility 0.25s ease;
-        -webkit-appearance:none;
-        outline:none;
-        background:#999999;
-        border-radius:0px;
+        position: relative;
+        left: 0px;
+        bottom: 0;
+        width: 7em;
+        height: 1.4em;
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity 0.25s ease, visibility 0.25s ease;
+        -webkit-appearance: none;
+        outline: none;
+        background: transparent;
+        border-radius: 1em;
+		outline: rgba(255, 255, 255, 0.5) solid 0.15em !important;
+		box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.8) !important;
 		cursor: pointer;
 		margin-left: -0px;
       "
@@ -225,7 +227,7 @@ _create() {
     // browser.storage.onChanged.addEventListener(e => console.log(e))
     // browser.storage.local.addEventListener('changed', e => console.log(e))
     // browser.storage.local.onChanged.addEventListener(e => console.log(e))
-	this._container.addEventListener(
+	this._slider.addEventListener(
       "wheel",
       this._onContainerWheel.bind(this),
       { passive: false }
@@ -236,7 +238,7 @@ _create() {
     const step = 0.05;
     const direction = e.deltaY > 0 ? -1 : 1;
     let next = this._video.playbackRate + direction * step;
-    next = Math.min(3, Math.max(0, Math.round(next / step) * step));
+    next = Math.min(8, Math.max(0, Math.round(next / step) * step));
     this._video.playbackRate = next;
   }
   _updateRateDisplay() {
