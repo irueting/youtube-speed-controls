@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "YouTube Playback Speed Control",
+  "name": "YouTube Playback Speed Controls",
   "description": "Add playback speed indicator and controls to the YouTube video player controls. Modified Version of Jan Klass' addon (https://addons.mozilla.org/de/firefox/user/12762958/).",
-  "version": "1.0",
+  "version": "1.2",
   "browser_specific_settings": {
     "gecko": {
       "data_collection_permissions": {
