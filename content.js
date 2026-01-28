@@ -150,13 +150,13 @@ class Instance {
 _create() {
   let container = document.createElement('div');
   container.className = 'pbspeed-container';
-  container.style = 'margin: 8px 9px 0px; display:flex; align-items:center; gap:12px; position:relative; height: 40px; border-radius: 20px; background-color: rgba(0, 0, 0, 0.3); padding-left: 12px;padding-right: 12px; margin-left: 0px;';
+  container.style = 'margin: 8px 8px 0px; display:flex; align-items:center; gap:12px; position:relative; height: 40px; border-radius: 20px; background-color: rgba(0, 0, 0, 0.3); padding-left: 12px;padding-right: 12px; margin-left: 0px;';
 
   const svgURL = browser.runtime.getURL("playbackSpeed.svg");
   let displayHTML = `
     <div class="rdisplay" style="grid-row:1; grid-column:1; font-size:18px; user-select:none; cursor:pointer; display:flex; align-items:center;">
       <img src="${svgURL}" class="pbspeed-icon" style="width:25px; height:25px; filter: drop-shadow(0px 0px 1.3px rgba(0,0,0,0.6)) !important; margin-left: -5px;"/>
-      <span class="pbspeed-value" style="color:white; margin-left:6px; margin-right: 0px; font-size: 14px; text-shadow: rgba(0,0,0,0.9) 0px 0px 2px !important;"></span>
+      <span class="pbspeed-value" style="color:white; margin-left:6px; margin-right: 0px; text-align: right; font-size: 14px; text-shadow: rgba(0,0,0,0.9) 0px 0px 2px !important; width: 3.5ch;"></span>
     </div>
   `;
 
@@ -166,19 +166,24 @@ _create() {
         position: relative;
         left: 0px;
         bottom: 0;
-        width: 7em;
+        width: 0;
         height: 1.4em;
         opacity: 0;
         visibility: hidden;
-        transition: opacity 0.25s ease, visibility 0.25s ease;
         -webkit-appearance: none;
         outline: none;
         background: transparent;
         border-radius: 1em;
 		outline: rgba(255, 255, 255, 0.5) solid 0.15em !important;
-		box-shadow: 0 0 0px 1px rgba(255, 255, 255, 0.8) !important;
+		box-shadow: 0 0 0px 1px rgba(255, 255, 255) !important;
 		cursor: pointer;
 		margin-left: -0px;
+		margin-right: -10px;
+		overflow: hidden;
+        transition:
+            width 0.25s ease,
+            opacity 0.25s ease;
+		filter: drop-shadow(0px 0px 1.3px rgba(0,0,0,0.6)) !important;
       "
     />
   `;
@@ -199,14 +204,16 @@ _create() {
   this._presets = container.querySelector('.setrs');
 
   this._display.addEventListener('mouseenter', () => {
+	this._slider.style.marginRight = '-1px';
+	this._slider.style.width = '7em';
     this._slider.style.visibility = 'visible';
     this._slider.style.opacity = '1';
-	this._slider.style.display = 'block';
   });
   this._container.addEventListener('mouseleave', () => {
+	this._slider.style.marginRight = '-10px';
     this._slider.style.opacity = '0';
     this._slider.style.visibility = 'hidden';
-	this._slider.style.display = 'none';
+	this._slider.style.width = '0';
   });
 
   for (let x of this._presets.childNodes)
@@ -242,9 +249,10 @@ _create() {
     this._video.playbackRate = next;
   }
   _updateRateDisplay() {
-    let value = this._video.playbackRate
-    this._rateDisplay.innerText = `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.replace(",", ".")
-    this._slider.value = value
+    let value = this._video.playbackRate;
+    this._rateDisplay.innerText = `${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`.replace(",", ".");
+    this._slider.value = value;
+	this._rateDisplay.style.fontWeight = value === 1 ? '400' : '500';
   }
   _onPresetClick(e) {
     this._video.playbackRate = e.target.innerText
